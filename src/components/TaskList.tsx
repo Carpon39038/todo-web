@@ -27,6 +27,7 @@ function SortableTaskItem(props: {
   onUpdate: (id: string, fields: Partial<Task>) => void;
   selected?: boolean;
   onSelect?: (id: string) => void;
+  onOpenDetail: (task: Task) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.task.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -45,9 +46,10 @@ interface Props {
   onReorder: (tasks: Task[]) => void;
   selectedIds: Set<string>;
   onSelect?: (id: string) => void;
+  onOpenDetail: (task: Task) => void;
 }
 
-export default function TaskList({ tasks, onToggle, onDelete, onUpdate, onReorder, selectedIds, onSelect }: Props) {
+export default function TaskList({ tasks, onToggle, onDelete, onUpdate, onReorder, selectedIds, onSelect, onOpenDetail }: Props) {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -79,6 +81,7 @@ export default function TaskList({ tasks, onToggle, onDelete, onUpdate, onReorde
               onUpdate={onUpdate}
               selected={selectedIds.has(task.id)}
               onSelect={onSelect}
+              onOpenDetail={onOpenDetail}
             />
           ))}
         </div>

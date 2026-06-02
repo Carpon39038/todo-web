@@ -11,6 +11,10 @@ import TaskInput from '@/components/TaskInput';
 import TaskList from '@/components/TaskList';
 import FilterBar from '@/components/FilterBar';
 import BatchActions from '@/components/BatchActions';
+import StatsBar from '@/components/StatsBar';
+import SkeletonList from '@/components/SkeletonList';
+import TaskDetailPanel from '@/components/TaskDetailPanel';
+import ToastContainer, { useToastManager } from '@/components/Toast';
 
 export default function Home() {
   const { dark, toggle: toggleDark } = useDarkMode();
@@ -19,7 +23,9 @@ export default function Home() {
   const [priorityFilter, setPriorityFilter] = useState<Priority | 'all'>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [batchMode, setBatchMode] = useState(false);
+  const [detailTask, setDetailTask] = useState<Task | null>(null);
   const { query, debounced: search, setQuery } = useSearch();
+  const { toasts, addToast } = useToastManager();
 
   const { tasks, loading, addTask, updateTask, deleteTask, reorderTasks } = useTasks(
     categoryFilter ? 'all' : statusFilter,
@@ -36,13 +42,28 @@ export default function Home() {
     }
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(t => t.content.toLowerCase().includes(q) || t.tags.some(tag => tag.toLowerCase().includes(q)));
+      result = result.filter(t =>
+        t.content.toLowerCase().includes(q) ||
+        t.tags.some(tag => tag.toLowerCase().includes(q)) ||
+        t.category.toLowerCase().includes(q)
+      );
     }
     return result;
   }, [tasks, categoryFilter, statusFilter, priorityFilter, search]);
 
   const toggleTask = (id: string, status: string) => {
     updateTask(id, { status: status === 'todo' ? 'done' : 'todo' });
+    addToast(status === 'todo' ? 'Task completed ✓' : 'Task reopened', 'success');
+  };
+
+  const handleAdd = (fields: Partial<Task>) => {
+    addTask(fields);
+    addToast('Task added', 'success');
+  };
+
+  const handleDelete = (id: string) => {
+    deleteTask(id);
+    addToast('Task deleted', 'info');
   };
 
   const handleSelect = (id: string) => {
@@ -56,34 +77,54 @@ export default function Home() {
   const handleDeleteSelected = () => {
     selectedIds.forEach(id => deleteTask(id));
     setSelectedIds(new Set());
+    addToast(`${selectedIds.size} tasks deleted`, 'info');
+    setBatchMode(false);
   };
 
   const handleMarkSelected = (newStatus: 'todo' | 'done') => {
     selectedIds.forEach(id => updateTask(id, { status: newStatus }));
     setSelectedIds(new Set());
+    addToast(`${selectedIds.size} tasks marked as ${newStatus}`, 'success');
   };
 
   const allCategories = ['general', 'work', 'personal', 'shopping', 'health'];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors">
-      <div className="max-w-lg mx-auto px-4 py-8 sm:py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">✓ Todo</h1>
+    <main className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+      <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>✓ Todo</h1>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Stay organized, get things done</p>
+          </div>
           <div className="flex gap-2">
-            <button onClick={() => setBatchMode(b => !b)} className={`px-3 py-2 rounded-lg text-sm transition-colors ${batchMode ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
+            <button
+              onClick={() => setBatchMode(b => !b)}
+              className="px-3 py-2 rounded-xl text-sm font-medium transition-all"
+              style={{
+                background: batchMode ? 'var(--text-primary)' : 'var(--bg-input)',
+                color: batchMode ? 'var(--bg-primary)' : 'var(--text-secondary)',
+              }}
+            >
               ☑️ Select
             </button>
             <DarkModeToggle dark={dark} toggle={toggleDark} />
           </div>
         </div>
 
+        {/* Stats */}
+        <StatsBar tasks={tasks} />
+
+        {/* Search */}
         <div className="mb-4">
           <SearchBar value={query} onChange={setQuery} />
         </div>
 
-        <TaskInput onAdd={addTask} categories={allCategories} />
+        {/* Add Task */}
+        <TaskInput onAdd={handleAdd} categories={allCategories} />
 
+        {/* Filters */}
         <FilterBar
           status={statusFilter}
           onStatusChange={setStatusFilter}
@@ -94,6 +135,7 @@ export default function Home() {
           categories={allCategories}
         />
 
+        {/* Batch Actions */}
         {batchMode && (
           <BatchActions
             selectedIds={selectedIds}
@@ -104,20 +146,44 @@ export default function Home() {
           />
         )}
 
+        {/* Task List */}
         {loading ? (
-          <div className="text-center text-gray-400 py-12">Loading...</div>
+          <SkeletonList />
+        ) : filteredTasks.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-5xl mb-4">📝</div>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              {search ? 'No matching tasks' : 'No tasks yet — add one above'}
+            </p>
+          </div>
         ) : (
-          <TaskList
-            tasks={filteredTasks}
-            onToggle={toggleTask}
-            onDelete={deleteTask}
-            onUpdate={updateTask}
-            onReorder={reorderTasks}
-            selectedIds={selectedIds}
-            onSelect={batchMode ? handleSelect : undefined}
-          />
+          <div className="space-y-2">
+            <TaskList
+              tasks={filteredTasks}
+              onToggle={toggleTask}
+              onDelete={handleDelete}
+              onUpdate={(id, fields) => { updateTask(id, fields); }}
+              onReorder={reorderTasks}
+              selectedIds={selectedIds}
+              onSelect={batchMode ? handleSelect : undefined}
+              onOpenDetail={setDetailTask}
+            />
+          </div>
         )}
       </div>
+
+      {/* Detail Panel */}
+      {detailTask && (
+        <TaskDetailPanel
+          task={detailTask}
+          onClose={() => setDetailTask(null)}
+          onUpdate={updateTask}
+          onDelete={handleDelete}
+        />
+      )}
+
+      {/* Toast */}
+      <ToastContainer toasts={toasts} />
     </main>
   );
 }
