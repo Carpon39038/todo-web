@@ -1,1 +1,43 @@
+@import "tailwindcss";
 
+:root {
+  --background: #f9fafb;
+  --foreground: #1f2937;
+}
+
+.dark {
+  --background: #111827;
+  --foreground: #f3f4f6;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 500px; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.25s ease-out;
+  overflow: hidden;
+}
+
+/* Mobile touch targets */
+@media (max-width: 640px) {
+  button, select, input[type="checkbox"] {
+    min-height: 44px;
+  }
+}

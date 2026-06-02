@@ -1,137 +1,122 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-
-type Task = { id: string; content: string; status: string; created_at: string; source: string };
-
-function relativeTime(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
-
-type Filter = 'all' | 'todo' | 'done';
+import { useState, useMemo } from 'react';
+import { Task, TaskStatus, Priority } from '@/lib/types';
+import { useDarkMode } from '@/hooks/useDarkMode';
+import { useTasks } from '@/hooks/useTasks';
+import { useSearch } from '@/hooks/useSearch';
+import DarkModeToggle from '@/components/DarkModeToggle';
+import SearchBar from '@/components/SearchBar';
+import TaskInput from '@/components/TaskInput';
+import TaskList from '@/components/TaskList';
+import FilterBar from '@/components/FilterBar';
+import BatchActions from '@/components/BatchActions';
 
 export default function Home() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [filter, setFilter] = useState<Filter>('todo');
-  const [newTask, setNewTask] = useState('');
-  const [loading, setLoading] = useState(true);
+  const { dark, toggle: toggleDark } = useDarkMode();
+  const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('todo');
+  const [categoryFilter, setCategoryFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState<Priority | 'all'>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchMode, setBatchMode] = useState(false);
+  const { query, debounced: search, setQuery } = useSearch();
 
-  const fetchTasks = useCallback(async () => {
-    const res = await fetch(`/api/tasks?status=${filter}`);
-    if (res.ok) setTasks(await res.json());
-    setLoading(false);
-  }, [filter]);
+  const { tasks, loading, addTask, updateTask, deleteTask, reorderTasks } = useTasks(
+    categoryFilter ? 'all' : statusFilter,
+    categoryFilter || undefined
+  );
 
-  useEffect(() => { fetchTasks(); }, [fetchTasks]);
+  const filteredTasks = useMemo(() => {
+    let result = tasks;
+    if (categoryFilter && statusFilter !== 'all') {
+      result = result.filter(t => t.status === statusFilter);
+    }
+    if (priorityFilter !== 'all') {
+      result = result.filter(t => t.priority === priorityFilter);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter(t => t.content.toLowerCase().includes(q) || t.tags.some(tag => tag.toLowerCase().includes(q)));
+    }
+    return result;
+  }, [tasks, categoryFilter, statusFilter, priorityFilter, search]);
 
-  const addTask = async () => {
-    if (!newTask.trim()) return;
-    await fetch('/api/tasks', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': 'cc4f569b2aee530571d623b65f4a26bcd21248d3342a05980499c0e1f0a4dbbc' },
-      body: JSON.stringify({ content: newTask.trim() }),
+  const toggleTask = (id: string, status: string) => {
+    updateTask(id, { status: status === 'todo' ? 'done' : 'todo' });
+  };
+
+  const handleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
     });
-    setNewTask('');
-    fetchTasks();
   };
 
-  const toggleTask = async (id: string, status: string) => {
-    await fetch(`/api/tasks/${id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-api-key': 'cc4f569b2aee530571d623b65f4a26bcd21248d3342a05980499c0e1f0a4dbbc' },
-      body: JSON.stringify({ status: status === 'todo' ? 'done' : 'todo' }),
-    });
-    fetchTasks();
+  const handleDeleteSelected = () => {
+    selectedIds.forEach(id => deleteTask(id));
+    setSelectedIds(new Set());
   };
 
-  const deleteTask = async (id: string) => {
-    await fetch(`/api/tasks/${id}`, { method: 'DELETE', headers: { 'x-api-key': 'cc4f569b2aee530571d623b65f4a26bcd21248d3342a05980499c0e1f0a4dbbc' } });
-    fetchTasks();
+  const handleMarkSelected = (newStatus: 'todo' | 'done') => {
+    selectedIds.forEach(id => updateTask(id, { status: newStatus }));
+    setSelectedIds(new Set());
   };
 
-  const filters: { key: Filter; label: string }[] = [
-    { key: 'todo', label: 'Todo' }, { key: 'done', label: 'Done' }, { key: 'all', label: 'All' },
-  ];
+  const allCategories = ['general', 'work', 'personal', 'shopping', 'health'];
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-lg mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">✓ Todo</h1>
-
-        {/* Add task */}
-        <div className="flex gap-2 mb-8">
-          <input
-            type="text"
-            value={newTask}
-            onChange={(e) => setNewTask(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addTask()}
-            placeholder="Add a new task..."
-            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-700 placeholder-gray-400"
-          />
-          <button
-            onClick={addTask}
-            className="px-5 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 transition-colors"
-          >
-            Add
-          </button>
-        </div>
-
-        {/* Filters */}
-        <div className="flex gap-1 mb-6 bg-gray-200 rounded-xl p-1">
-          {filters.map(f => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filter === f.key ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {f.label}
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors">
+      <div className="max-w-lg mx-auto px-4 py-8 sm:py-12">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">✓ Todo</h1>
+          <div className="flex gap-2">
+            <button onClick={() => setBatchMode(b => !b)} className={`px-3 py-2 rounded-lg text-sm transition-colors ${batchMode ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
+              ☑️ Select
             </button>
-          ))}
+            <DarkModeToggle dark={dark} toggle={toggleDark} />
+          </div>
         </div>
 
-        {/* Task list */}
-        <div className="space-y-2">
-          {loading ? (
-            <div className="text-center text-gray-400 py-12">Loading...</div>
-          ) : tasks.length === 0 ? (
-            <div className="text-center text-gray-400 py-12">No tasks yet</div>
-          ) : (
-            tasks.map(task => (
-              <div
-                key={task.id}
-                className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl border border-gray-100 hover:border-gray-200 transition-all group"
-              >
-                <button
-                  onClick={() => toggleTask(task.id, task.status)}
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors flex-shrink-0 ${
-                    task.status === 'done'
-                      ? 'bg-green-500 border-green-500 text-white'
-                      : 'border-gray-300 hover:border-green-400'
-                  }`}
-                >
-                  {task.status === 'done' && <span className="text-xs">✓</span>}
-                </button>
-                <span className={`flex-1 ${task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-700'}`}>
-                  {task.content}
-                </span>
-                <span className="text-xs text-gray-400 flex-shrink-0">{relativeTime(task.created_at)}</span>
-                <button
-                  onClick={() => deleteTask(task.id)}
-                  className="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
-                >
-                  ✕
-                </button>
-              </div>
-            ))
-          )}
+        <div className="mb-4">
+          <SearchBar value={query} onChange={setQuery} />
         </div>
+
+        <TaskInput onAdd={addTask} categories={allCategories} />
+
+        <FilterBar
+          status={statusFilter}
+          onStatusChange={setStatusFilter}
+          category={categoryFilter}
+          onCategoryChange={setCategoryFilter}
+          priorityFilter={priorityFilter}
+          onPriorityChange={setPriorityFilter}
+          categories={allCategories}
+        />
+
+        {batchMode && (
+          <BatchActions
+            selectedIds={selectedIds}
+            tasks={filteredTasks}
+            onClearSelection={() => setSelectedIds(new Set())}
+            onDeleteSelected={handleDeleteSelected}
+            onMarkSelected={handleMarkSelected}
+          />
+        )}
+
+        {loading ? (
+          <div className="text-center text-gray-400 py-12">Loading...</div>
+        ) : (
+          <TaskList
+            tasks={filteredTasks}
+            onToggle={toggleTask}
+            onDelete={deleteTask}
+            onUpdate={updateTask}
+            onReorder={reorderTasks}
+            selectedIds={selectedIds}
+            onSelect={batchMode ? handleSelect : undefined}
+          />
+        )}
       </div>
     </main>
   );

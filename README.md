@@ -1,53 +1,56 @@
-# todo-web
+# Todo Web
 
-A minimal todo list web app built with Next.js 14+, TypeScript, Tailwind CSS, and Supabase.
+A modern, full-featured todo app built with Next.js, Supabase, and Tailwind CSS.
+
+## Features
+
+- **Task CRUD** — Add, edit (double-click), delete, and toggle tasks
+- **Categories** — Organize tasks by category with custom category creation
+- **Priority levels** — Low, Medium, High with color-coded badges
+- **Due dates** — Date picker with overdue highlighting
+- **Tags** — Comma-separated tags per task
+- **Search** — Real-time debounced search across tasks
+- **Filters** — Filter by status, category, and priority
+- **Batch actions** — Select multiple tasks, bulk delete/mark done/todo
+- **Drag & drop** — Sortable task list (dnd-kit)
+- **Dark mode** — System preference detection + manual toggle, persisted to localStorage
+- **Realtime** — Supabase realtime subscription for live updates
+- **PWA** — Installable with offline caching via service worker
+- **Responsive** — Clean mobile-friendly UI
 
 ## Setup
 
-1. Clone and install:
-   ```bash
-   git clone https://github.com/Carpon39038/todo-web.git
-   cd todo-web
-   npm install
-   ```
+```bash
+pnpm install
+pnpm dev
+```
 
-2. Create `.env.local`:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=https://lknkmqfvigqsqqtutkhf.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-   TODO_API_KEY=your_api_key
-   ```
+### Environment Variables
 
-3. Create the Supabase table (SQL Editor):
-   ```sql
-   create table tasks (
-     id uuid primary key default gen_random_uuid(),
-     content text not null,
-     status text not null default 'todo' check (status in ('todo','done')),
-     source text not null default 'openclaw',
-     created_at timestamptz not null default now(),
-     updated_at timestamptz not null default now()
-   );
-   create index idx_tasks_status_created_at on tasks(status, created_at desc);
-   ```
+Create `.env.local`:
 
-4. Run dev server:
-   ```bash
-   npm run dev
-   ```
+```
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
 
-## Deploy
+### Database Migration
 
-Push to `main` branch — auto-deploys to Vercel. Set environment variables in Vercel dashboard.
+Run this SQL in your Supabase SQL editor:
 
-## API
+```sql
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS category text DEFAULT 'general';
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS priority text DEFAULT 'medium' CHECK (priority IN ('low','medium','high'));
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS due_date timestamptz;
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS tags text[] DEFAULT '{}';
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS sort_order integer DEFAULT 0;
+```
 
-All endpoints require `x-api-key` header.
+## Tech Stack
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | /api/tasks | Create task |
-| GET | /api/tasks?status=todo\|done\|all | List tasks |
-| PATCH | /api/tasks/[id] | Update task status |
-| DELETE | /api/tasks/[id] | Delete task |
+- Next.js 16 + React 19
+- Tailwind CSS v4
+- Supabase (database + realtime)
+- @dnd-kit (drag and drop)
+- PWA with service worker
