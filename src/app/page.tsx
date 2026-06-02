@@ -34,7 +34,7 @@ export default function Home() {
   const addTask = async () => {
     if (!newTask.trim()) return;
     await fetch('/api/tasks', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': '' },
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': 'cc4f569b2aee530571d623b65f4a26bcd21248d3342a05980499c0e1f0a4dbbc' },
       body: JSON.stringify({ content: newTask.trim() }),
     });
     setNewTask('');
@@ -43,14 +43,14 @@ export default function Home() {
 
   const toggleTask = async (id: string, status: string) => {
     await fetch(`/api/tasks/${id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-api-key': '' },
+      method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-api-key': 'cc4f569b2aee530571d623b65f4a26bcd21248d3342a05980499c0e1f0a4dbbc' },
       body: JSON.stringify({ status: status === 'todo' ? 'done' : 'todo' }),
     });
     fetchTasks();
   };
 
   const deleteTask = async (id: string) => {
-    await fetch(`/api/tasks/${id}`, { method: 'DELETE', headers: { 'x-api-key': '' } });
+    await fetch(`/api/tasks/${id}`, { method: 'DELETE', headers: { 'x-api-key': 'cc4f569b2aee530571d623b65f4a26bcd21248d3342a05980499c0e1f0a4dbbc' } });
     fetchTasks();
   };
 
