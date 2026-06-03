@@ -6,22 +6,20 @@ import { Task, Priority } from '@/lib/types';
 function relativeTime(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
+  if (mins < 1) return 'now';
   if (mins < 60) return `${mins}m`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h`;
   return `${Math.floor(hrs / 24)}d`;
 }
 
-function isOverdue(dateStr: string | null): boolean {
+function isOverdue(dateStr: string | null) {
   if (!dateStr) return false;
   return new Date(dateStr) < new Date() && new Date(dateStr).toDateString() !== new Date().toDateString();
 }
 
-const priorityDot: Record<Priority, string> = {
-  low: 'bg-green-400',
-  medium: 'bg-yellow-400',
-  high: 'bg-red-400',
+const priorityColor: Record<Priority, string> = {
+  low: '#34C759', medium: '#FF9500', high: '#FF3B30',
 };
 
 interface Props {
@@ -38,97 +36,100 @@ interface Props {
 export default function TaskItem({ task, onToggle, onDelete, onUpdate, onOpenDetail, selected, onSelect, dragHandleProps }: Props) {
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(task.content);
-  const [checkedAnim, setCheckedAnim] = useState(false);
+  const [checked, setChecked] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (editing && inputRef.current) inputRef.current.focus();
-  }, [editing]);
-
-  const handleDoubleClick = () => {
-    setEditContent(task.content);
-    setEditing(true);
-  };
-
-  const saveEdit = () => {
-    if (editContent.trim()) onUpdate(task.id, { content: editContent.trim() });
-    setEditing(false);
-  };
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
 
   const handleCheck = () => {
-    setCheckedAnim(true);
+    setChecked(true);
     onToggle(task.id, task.status);
-    setTimeout(() => setCheckedAnim(false), 300);
+    setTimeout(() => setChecked(false), 350);
   };
 
   const overdue = isOverdue(task.due_date);
 
   return (
     <div
-      className={`group flex items-start gap-3 px-4 py-3.5 rounded-2xl border transition-all animate-fadeIn cursor-default ${
-        selected ? 'ring-2 ring-primary-500' : ''
-      } ${overdue ? 'border-red-200 dark:border-red-800/50' : ''}`}
-      style={{ background: 'var(--bg-card)', borderColor: overdue ? undefined : 'var(--border-light)', boxShadow: 'var(--shadow-sm)' }}
+      className={`flex items-start gap-3 px-4 py-3 transition-all animate-apple-fade group ${selected ? 'ring-2 ring-[var(--color-apple-blue,#007AFF)]' : ''}`}
+      style={{ background: 'var(--bg-elevated)' }}
       onClick={() => onOpenDetail(task)}
     >
       {onSelect && (
         <input
-          type="checkbox"
-          checked={!!selected}
-          onChange={e => { e.stopPropagation(); onSelect(task.id); }}
-          className="w-4 h-4 rounded mt-1 flex-shrink-0 accent-blue-500"
+          type="checkbox" checked={!!selected}
+          onChange={() => onSelect(task.id)}
+          className="w-[22px] h-[22px] rounded-full mt-0.5 flex-shrink-0 accent-[#007AFF]"
           onClick={e => e.stopPropagation()}
         />
       )}
 
+      {/* Checkbox */}
       <button
         onClick={e => { e.stopPropagation(); handleCheck(); }}
-        className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${
-          task.status === 'done'
-            ? 'bg-green-500 border-green-500 text-white'
-            : 'border-gray-300 dark:border-gray-500 hover:border-green-400'
-        } ${checkedAnim ? 'animate-check' : ''}`}
+        className={`w-[24px] h-[24px] rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${
+          checked ? 'animate-apple-check' : ''
+        } ${task.status === 'done'
+          ? 'bg-[var(--color-apple-green,#34C759)]'
+          : ''
+        }`}
+        style={task.status !== 'done'
+          ? { border: '2px solid var(--separator)', borderRadius: '50%' }
+          : { border: '2px solid var(--color-apple-green,#34C759)', borderRadius: '50%' }
+        }
       >
-        {task.status === 'done' && <span className="text-[10px]">✓</span>}
+        {task.status === 'done' && (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 6l3 3 5-5" />
+          </svg>
+        )}
       </button>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          {dragHandleProps && (
-            <span {...dragHandleProps} className="cursor-grab opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity flex-shrink-0">⠿</span>
-          )}
-          {editing ? (
-            <input
-              ref={inputRef}
-              type="text"
-              value={editContent}
-              onChange={e => setEditContent(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') setEditing(false); }}
-              onBlur={saveEdit}
-              className="flex-1 px-2 py-0.5 rounded-lg text-sm border border-primary-300 dark:border-primary-700"
-              style={{ background: 'var(--bg-input)', color: 'var(--text-primary)' }}
-              onClick={e => e.stopPropagation()}
-            />
-          ) : (
-            <span onDoubleClick={e => { e.stopPropagation(); handleDoubleClick(); }} className={`text-sm leading-snug ${task.status === 'done' ? 'line-through text-gray-400 dark:text-gray-500' : ''}`} style={!task.status ? {} : {}}  >
-              {task.content}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          <span className={`w-2 h-2 rounded-full ${priorityDot[task.priority]}`} title={task.priority} />
-          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)' }}>{task.category}</span>
+      {/* Content */}
+      <div className="flex-1 min-w-0" onClick={e => e.stopPropagation()}>
+        {editing ? (
+          <input
+            ref={inputRef} type="text" value={editContent}
+            onChange={e => setEditContent(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { if (editContent.trim()) onUpdate(task.id, { content: editContent.trim() }); setEditing(false); } if (e.key === 'Escape') setEditing(false); }}
+            onBlur={() => { if (editContent.trim()) onUpdate(task.id, { content: editContent.trim() }); setEditing(false); }}
+            className="text-base font-normal rounded-lg px-2 py-0.5 outline-none"
+            style={{ background: 'var(--fill-tertiary)', color: 'var(--text-primary)', boxShadow: '0 0 0 3px rgba(0,122,255,0.3)', width: '100%' }}
+          />
+        ) : (
+          <p
+            onDoubleClick={() => { setEditContent(task.content); setEditing(true); }}
+            className={`text-[17px] leading-snug -tracking-[0.01em] ${task.status === 'done' ? 'line-through' : ''}`}
+            style={{ color: task.status === 'done' ? 'var(--text-tertiary)' : 'var(--text-primary)' }}
+          >
+            {task.content}
+          </p>
+        )}
+
+        {/* Meta row */}
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="w-[6px] h-[6px] rounded-full flex-shrink-0" style={{ background: priorityColor[task.priority] }} />
+          <span className="text-[13px] font-medium" style={{ color: 'var(--text-secondary)' }}>{task.category}</span>
           {task.due_date && (
-            <span className={`text-xs ${overdue ? 'text-red-500 font-medium' : ''}`} style={!overdue ? { color: 'var(--text-muted)' } : {}}>
-              📅 {new Date(task.due_date).toLocaleDateString()}
+            <span className="text-[13px]" style={{ color: overdue ? 'var(--color-apple-red,#FF3B30)' : 'var(--text-secondary)', fontWeight: overdue ? 600 : 400 }}>
+              {new Date(task.due_date).toLocaleDateString()}
             </span>
           )}
-          {task.tags.slice(0, 3).map(t => (
-            <span key={t} className="text-xs" style={{ color: 'var(--text-muted)' }}>#{t}</span>
+          {task.tags.slice(0, 2).map(t => (
+            <span key={t} className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>#{t}</span>
           ))}
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{relativeTime(task.created_at)}</span>
+          <span className="text-[13px]" style={{ color: 'var(--text-tertiary)' }}>{relativeTime(task.created_at)}</span>
         </div>
       </div>
+
+      {/* Delete */}
+      <button
+        onClick={e => { e.stopPropagation(); onDelete(task.id); }}
+        className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-full flex items-center justify-center transition-all text-sm flex-shrink-0"
+        style={{ color: 'var(--text-tertiary)' }}
+      >
+        🗑
+      </button>
     </div>
   );
 }

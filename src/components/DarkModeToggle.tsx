@@ -4,10 +4,11 @@ export default function DarkModeToggle({ dark, toggle }: { dark: boolean; toggle
   return (
     <button
       onClick={toggle}
-      className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+      className="w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
+      style={{ background: 'var(--fill-secondary)' }}
       title={dark ? 'Light mode' : 'Dark mode'}
     >
-      {dark ? '☀️' : '🌙'}
+      <span className="text-lg">{dark ? '☀️' : '🌙'}</span>
     </button>
   );
 }

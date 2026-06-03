@@ -6,14 +6,11 @@ interface Props {
   tasks: Task[];
 }
 
-function StatCard({ label, value, icon, accent }: { label: string; value: number | string; icon: string; accent: string }) {
+function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all ${accent}`}>
-      <span className="text-2xl">{icon}</span>
-      <div>
-        <div className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{value}</div>
-        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{label}</div>
-      </div>
+    <div className="flex flex-col items-center gap-1 py-3 px-4 rounded-2xl transition-all" style={{ background: 'var(--fill-tertiary)' }}>
+      <span className="text-[28px] font-bold tracking-tight" style={{ color }}>{value}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>{label}</span>
     </div>
   );
 }
@@ -21,22 +18,15 @@ function StatCard({ label, value, icon, accent }: { label: string; value: number
 export default function StatsBar({ tasks }: Props) {
   const total = tasks.length;
   const done = tasks.filter(t => t.status === 'done').length;
-  const overdue = tasks.filter(t => {
-    if (!t.due_date || t.status === 'done') return false;
-    return new Date(t.due_date) < new Date();
-  }).length;
-  const highPriority = tasks.filter(t => t.priority === 'high' && t.status === 'todo').length;
-
-  const cards = [
-    { label: 'Total', value: total, icon: '📋', accent: 'bg-primary-50 dark:bg-primary-950/30 border-primary-100 dark:border-primary-900' },
-    { label: 'Done', value: done, icon: '✅', accent: 'bg-green-50 dark:bg-green-950/30 border-green-100 dark:border-green-900' },
-    { label: 'Overdue', value: overdue, icon: '⚠️', accent: overdue > 0 ? 'bg-red-50 dark:bg-red-950/30 border-red-100 dark:border-red-900' : 'bg-gray-50 dark:bg-gray-900/30 border-gray-100 dark:border-gray-800' },
-    { label: 'Urgent', value: highPriority, icon: '🔥', accent: highPriority > 0 ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900' : 'bg-gray-50 dark:bg-gray-900/30 border-gray-100 dark:border-gray-800' },
-  ];
+  const overdue = tasks.filter(t => t.due_date && t.status !== 'todo' && new Date(t.due_date) < new Date()).length || tasks.filter(t => t.due_date && t.status === 'todo' && new Date(t.due_date) < new Date()).length;
+  const urgent = tasks.filter(t => t.priority === 'high' && t.status === 'todo').length;
 
   return (
     <div className="grid grid-cols-4 gap-3 mb-6">
-      {cards.map(c => <StatCard key={c.label} {...c} />)}
+      <StatPill label="Total" value={total} color="var(--text-primary)" />
+      <StatPill label="Done" value={done} color="var(--color-apple-green,#34C759)" />
+      <StatPill label="Overdue" value={overdue} color={overdue > 0 ? 'var(--color-apple-red,#FF3B30)' : 'var(--text-secondary)'} />
+      <StatPill label="Urgent" value={urgent} color={urgent > 0 ? 'var(--color-apple-orange,#FF9500)' : 'var(--text-secondary)'} />
     </div>
   );
 }
