@@ -14,7 +14,9 @@ import BatchActions from '@/components/BatchActions';
 import StatsBar from '@/components/StatsBar';
 import SkeletonList from '@/components/SkeletonList';
 import TaskDetailPanel from '@/components/TaskDetailPanel';
+import ApiKeyPrompt from '@/components/ApiKeyPrompt';
 import ToastContainer, { useToastManager } from '@/components/Toast';
+import { useApiKeyGuard } from '@/lib/apiKey';
 
 export default function Home() {
   const { dark, toggle: toggleDark } = useDarkMode();
@@ -26,6 +28,7 @@ export default function Home() {
   const [detailTask, setDetailTask] = useState<Task | null>(null);
   const { query, debounced: search, setQuery } = useSearch();
   const { toasts, addToast } = useToastManager();
+  const { apiKey, showPrompt, save: saveApiKey } = useApiKeyGuard();
 
   const { tasks, loading, addTask, updateTask, deleteTask, reorderTasks } = useTasks(
     categoryFilter ? 'all' : statusFilter, categoryFilter || undefined
@@ -60,6 +63,7 @@ export default function Home() {
 
   return (
     <main style={{ background: 'var(--bg-primary)' }}>
+      {showPrompt && <ApiKeyPrompt onSave={saveApiKey} />}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">

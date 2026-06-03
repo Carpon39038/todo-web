@@ -20,9 +20,7 @@ export function useToastManager() {
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
-      setTimeout(() => {
-        setToasts(prev => prev.filter(t => t.id !== id));
-      }, 300);
+      setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 300);
     }, 2500);
   }, []);
 
