@@ -2,13 +2,11 @@
 
 export default function DarkModeToggle({ dark, toggle }: { dark: boolean; toggle: () => void }) {
   return (
-    <button
-      onClick={toggle}
-      className="w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90"
-      style={{ background: 'var(--fill-secondary)' }}
-      title={dark ? 'Light mode' : 'Dark mode'}
+    <button onClick={toggle}
+      className="w-9 h-9 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+      style={{ background: 'var(--fill3)' }}
     >
-      <span className="text-lg">{dark ? '☀️' : '🌙'}</span>
+      <span className="text-[15px]">{dark ? '☀️' : '🌙'}</span>
     </button>
   );
 }

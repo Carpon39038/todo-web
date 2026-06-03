@@ -20,47 +20,34 @@ const tabs: { key: TaskStatus | 'all'; label: string }[] = [
 
 export default function FilterBar({ status, onStatusChange, category, onCategoryChange, priorityFilter, onPriorityChange, categories }: Props) {
   return (
-    <div className="space-y-3 mb-5">
-      {/* Tab bar - iOS segmented control style */}
-      <div className="flex rounded-full p-[3px]" style={{ background: 'var(--fill-tertiary)' }}>
+    <div className="mb-5">
+      {/* Segmented control */}
+      <div className="a-seg mb-3">
         {tabs.map(t => (
-          <button
-            key={t.key}
-            onClick={() => onStatusChange(t.key)}
-            className="flex-1 py-2 rounded-full text-[15px] font-semibold transition-all"
-            style={{
-              background: status === t.key ? 'var(--bg-elevated)' : 'transparent',
-              color: status === t.key ? 'var(--text-primary)' : 'var(--text-secondary)',
-              boxShadow: status === t.key ? 'var(--shadow-card)' : 'none',
-            }}
-          >
+          <button key={t.key} onClick={() => onStatusChange(t.key)}
+            className={status === t.key ? 'active' : ''}>
             {t.label}
           </button>
         ))}
       </div>
 
-      {/* Filter pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-        <select
-          value={category} onChange={e => onCategoryChange(e.target.value)}
-          className="rounded-full text-[13px] font-medium px-3 py-1.5 border-none outline-none cursor-pointer"
-          style={{ background: 'var(--fill-tertiary)', color: 'var(--text-secondary)' }}
-        >
+      {/* Filters row */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <select value={category} onChange={e => onCategoryChange(e.target.value)}
+          className="a-input !w-auto !py-2 !text-[13px] !font-medium !rounded-lg">
           <option value="">All Categories</option>
           {categories.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <div className="flex gap-1.5">
-          {(['all', 'high', 'medium', 'low'] as const).map(p => (
-            <button
-              key={p}
-              onClick={() => onPriorityChange(p === 'all' ? 'all' : p)}
-              className="rounded-full text-[13px] font-medium px-3 py-1.5 transition-all whitespace-nowrap"
+
+        <div className="flex gap-1">
+          {([['all', 'All'], ['high', '🔴 High'], ['medium', '🟡 Med'], ['low', '🟢 Low']] as const).map(([k, label]) => (
+            <button key={k} onClick={() => onPriorityChange(k === 'all' ? 'all' : k)}
+              className="px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-all"
               style={{
-                background: priorityFilter === p ? 'var(--color-apple-blue, #007AFF)' : 'var(--fill-tertiary)',
-                color: priorityFilter === p ? '#fff' : 'var(--text-secondary)',
-              }}
-            >
-              {p === 'all' ? 'All' : p === 'high' ? '🔴 High' : p === 'medium' ? '🟡 Med' : '🟢 Low'}
+                background: priorityFilter === k ? 'var(--color-apple-blue)' : 'var(--fill3)',
+                color: priorityFilter === k ? '#fff' : 'var(--text2)',
+              }}>
+              {label}
             </button>
           ))}
         </div>

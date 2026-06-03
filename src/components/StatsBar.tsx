@@ -2,31 +2,28 @@
 
 import { Task } from '@/lib/types';
 
-interface Props {
-  tasks: Task[];
-}
-
-function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="flex flex-col items-center py-3 px-2 rounded-2xl" style={{ background: 'var(--fill-tertiary)' }}>
-      <span className="text-[26px] font-bold tracking-tight leading-tight" style={{ color }}>{value}</span>
-      <span className="text-[11px] font-semibold uppercase tracking-wider mt-1" style={{ color: 'var(--text-secondary)' }}>{label}</span>
-    </div>
-  );
-}
-
-export default function StatsBar({ tasks }: Props) {
+export default function StatsBar({ tasks }: { tasks: Task[] }) {
   const total = tasks.length;
   const done = tasks.filter(t => t.status === 'done').length;
   const overdue = tasks.filter(t => t.due_date && t.status === 'todo' && new Date(t.due_date) < new Date()).length;
   const urgent = tasks.filter(t => t.priority === 'high' && t.status === 'todo').length;
 
+  const items = [
+    { label: 'Total', value: total, color: 'var(--text)' },
+    { label: 'Done', value: done, color: 'var(--color-apple-green)' },
+    { label: 'Overdue', value: overdue, color: overdue ? 'var(--color-apple-red)' : 'var(--text3)' },
+    { label: 'Urgent', value: urgent, color: urgent ? 'var(--color-apple-orange)' : 'var(--text3)' },
+  ];
+
   return (
-    <div className="grid grid-cols-4 gap-2.5 mb-6">
-      <StatPill label="Total" value={total} color="var(--text-primary)" />
-      <StatPill label="Done" value={done} color="var(--color-apple-green,#34C759)" />
-      <StatPill label="Overdue" value={overdue} color={overdue > 0 ? 'var(--color-apple-red,#FF3B30)' : 'var(--text-secondary)'} />
-      <StatPill label="Urgent" value={urgent} color={urgent > 0 ? 'var(--color-apple-orange,#FF9500)' : 'var(--text-secondary)'} />
+    <div className="flex gap-3 mb-6 overflow-x-auto -mx-1 px-1">
+      {items.map(it => (
+        <div key={it.label} className="flex-1 text-center py-3 rounded-xl min-w-0"
+          style={{ background: 'var(--fill3)' }}>
+          <div className="text-[22px] font-bold tracking-tight" style={{ color: it.color }}>{it.value}</div>
+          <div className="text-[11px] font-semibold uppercase tracking-wider mt-0.5" style={{ color: 'var(--text2)' }}>{it.label}</div>
+        </div>
+      ))}
     </div>
   );
 }

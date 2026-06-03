@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ========================================
-   Apple Design System (iOS 18 Inspired)
+   Apple Reminders (iOS 18) Recreation
    ======================================== */
 
 @theme {
@@ -12,250 +12,214 @@
   --color-apple-yellow: #FFCC00;
   --color-apple-purple: #AF52DE;
   --color-apple-pink: #FF2D55;
-  --color-apple-gray: #8E8E93;
+  --color-apple-teal: #5AC8FA;
 }
 
-/* Typography - SF Pro style */
 :root {
-  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
 
-  /* Colors - Light */
-  --bg-primary: #F2F2F7;
-  --bg-secondary: #FFFFFF;
-  --bg-tertiary: #F2F2F7;
-  --bg-elevated: #FFFFFF;
-  --bg-grouped: #F2F2F7;
-  --bg-grouped-secondary: #FFFFFF;
+  --bg: #F2F2F7;
+  --bg-card: #FFFFFF;
+  --bg-input: rgba(118, 118, 128, 0.12);
 
-  --fill-primary: rgba(120, 120, 128, 0.2);
-  --fill-secondary: rgba(120, 120, 128, 0.16);
-  --fill-tertiary: rgba(118, 118, 128, 0.12);
+  --text: #000000D9;
+  --text2: #00000099;
+  --text3: #0000004D;
 
-  --text-primary: #000000;
-  --text-secondary: rgba(60, 60, 67, 0.6);
-  --text-tertiary: rgba(60, 60, 67, 0.3);
+  --fill1: rgba(120, 120, 128, 0.2);
+  --fill2: rgba(120, 120, 128, 0.16);
+  --fill3: rgba(118, 118, 128, 0.12);
 
-  --separator: rgba(60, 60, 67, 0.12);
-
-  --shadow-card: 0 0 0 0.5px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.08);
-  --shadow-elevated: 0 0 0 0.5px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.12);
-
-  --radius-large: 20px;
-  --radius-medium: 14px;
-  --radius-small: 10px;
-  --radius-capsule: 100px;
+  --sep: rgba(60, 60, 67, 0.12);
 }
 
 .dark {
-  --bg-primary: #000000;
-  --bg-secondary: #1C1C1E;
-  --bg-tertiary: #2C2C2E;
-  --bg-elevated: #1C1C1E;
-  --bg-grouped: #000000;
-  --bg-grouped-secondary: #1C1C1E;
+  --bg: #000000;
+  --bg-card: #1C1C1E;
+  --bg-input: rgba(120, 120, 128, 0.24);
 
-  --fill-primary: rgba(120, 120, 128, 0.36);
-  --fill-secondary: rgba(120, 120, 128, 0.32);
-  --fill-tertiary: rgba(118, 118, 128, 0.24);
+  --text: #FFFFFFE6;
+  --text2: #FFFFFF99;
+  --text3: #FFFFFF4D;
 
-  --text-primary: #FFFFFF;
-  --text-secondary: rgba(235, 235, 245, 0.6);
-  --text-tertiary: rgba(235, 235, 245, 0.3);
+  --fill1: rgba(120, 120, 128, 0.36);
+  --fill2: rgba(120, 120, 128, 0.32);
+  --fill3: rgba(118, 118, 128, 0.24);
 
-  --separator: rgba(84, 84, 88, 0.36);
-
-  --shadow-card: 0 0 0 0.5px rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.32);
-  --shadow-elevated: 0 0 0 0.5px rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.48);
+  --sep: rgba(84, 84, 88, 0.65);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.29;
+  letter-spacing: -0.022em;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -0.01em;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Apple-style card */
-.apple-card {
-  background: var(--bg-elevated);
-  border-radius: var(--radius-large);
-  box-shadow: var(--shadow-card);
+/* === Input === */
+.a-input {
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: var(--bg-input);
+  border: none;
+  font-family: var(--font);
+  font-size: 17px;
+  color: var(--text);
+  outline: none;
+}
+.a-input::placeholder { color: var(--text3); }
+.a-input:focus { box-shadow: 0 0 0 3.5px rgba(0, 122, 255, 0.25); }
+
+/* === Button === */
+.a-btn-blue {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 36px; padding: 0 18px;
+  border-radius: 18px;
+  background: var(--color-apple-blue);
+  color: #fff; font-size: 15px; font-weight: 600;
+  border: none; cursor: pointer;
+  transition: opacity .15s;
+}
+.a-btn-blue:hover { opacity: .85; }
+.a-btn-blue:active { opacity: .7; }
+
+.a-btn-gray {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 36px; padding: 0 18px;
+  border-radius: 18px;
+  background: var(--fill2);
+  color: var(--color-apple-blue); font-size: 15px; font-weight: 600;
+  border: none; cursor: pointer;
+  transition: opacity .15s;
+}
+.a-btn-gray:hover { opacity: .85; }
+
+/* === Segmented Control === */
+.a-seg {
+  display: inline-flex;
+  border-radius: 9px;
+  padding: 2px;
+  background: var(--fill1);
+}
+.a-seg button {
+  padding: 6px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  background: transparent;
+  border: none; cursor: pointer;
+  transition: all .2s;
+  font-family: var(--font);
+}
+.a-seg button.active {
+  background: var(--bg-card);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
 }
 
-/* Apple-style grouped list */
-.apple-list {
-  background: var(--bg-grouped-secondary);
-  border-radius: var(--radius-medium);
+/* === List (Apple grouped) === */
+.a-list {
+  background: var(--bg-card);
+  border-radius: 12px;
   overflow: hidden;
 }
-
-/* Apple capsule button */
-.apple-btn-primary {
-  background: var(--color-apple-blue, #007AFF);
-  color: #FFFFFF;
-  border-radius: var(--radius-capsule);
-  font-weight: 600;
-  font-size: 15px;
-  padding: 10px 22px;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.apple-btn-primary:hover { opacity: 0.85; }
-.apple-btn-primary:active { opacity: 0.7; transform: scale(0.98); }
-
-.apple-btn-secondary {
-  background: var(--fill-secondary);
-  color: var(--color-apple-blue, #007AFF);
-  border-radius: var(--radius-capsule);
-  font-weight: 600;
-  font-size: 15px;
-  padding: 10px 22px;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.apple-btn-secondary:hover { opacity: 0.85; }
-.apple-btn-secondary:active { opacity: 0.7; }
-
-/* Apple input */
-.apple-input {
-  background: var(--fill-tertiary);
-  border: none;
-  border-radius: var(--radius-small);
+.a-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   padding: 12px 16px;
-  font-size: 17px;
-  color: var(--text-primary);
-  outline: none;
-  width: 100%;
-  font-family: var(--font-sans);
-  letter-spacing: -0.01em;
+  position: relative;
+  transition: background .1s;
+}
+.a-list-item:hover { background: var(--fill3); }
+.a-list-item + .a-list-item::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 52px; right: 0;
+  height: .33px;
+  background: var(--sep);
 }
 
-.apple-input::placeholder { color: var(--text-tertiary); }
-.apple-input:focus { box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3); }
+/* === Checkbox (Apple circle) === */
+.a-check {
+  width: 22px; height: 22px; min-width: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--sep);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; padding: 0;
+  background: transparent;
+  transition: all .15s;
+  margin-top: 1px;
+}
+.a-check.done {
+  border-color: var(--color-apple-blue);
+  background: var(--color-apple-blue);
+}
+.a-check.done svg { display: block; }
+.a-check svg { display: none; }
 
-/* Animations */
-@keyframes appleFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+/* === Animations === */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
-@keyframes appleScaleIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes appleSlideRight {
-  from { opacity: 0; transform: translateX(-12px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes appleCheckPop {
+@keyframes pop {
   0% { transform: scale(1); }
-  40% { transform: scale(1.25); }
+  40% { transform: scale(1.2); }
   100% { transform: scale(1); }
 }
-
-@keyframes appleSlideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(.96); }
+  to { opacity: 1; transform: scale(1); }
 }
-
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+.anim-fade { animation: fadeUp .3s ease both; }
+.anim-pop { animation: pop .3s ease; }
 
-.animate-apple-fade { animation: appleFadeIn 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
-.animate-apple-scale { animation: appleScaleIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
-.animate-apple-slide { animation: appleSlideRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
-.animate-apple-check { animation: appleCheckPop 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-.animate-apple-up { animation: appleSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
-
-/* Stagger children */
-.stagger > * { animation: appleFadeIn 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
-.stagger > *:nth-child(1) { animation-delay: 0ms; }
-.stagger > *:nth-child(2) { animation-delay: 30ms; }
-.stagger > *:nth-child(3) { animation-delay: 60ms; }
-.stagger > *:nth-child(4) { animation-delay: 90ms; }
-.stagger > *:nth-child(5) { animation-delay: 120ms; }
-.stagger > *:nth-child(n+6) { animation-delay: 150ms; }
-
-/* Skeleton */
 .skeleton {
-  background: linear-gradient(90deg, var(--fill-tertiary) 25%, var(--fill-secondary) 50%, var(--fill-tertiary) 75%);
+  background: linear-gradient(90deg, var(--fill3) 25%, var(--fill2) 50%, var(--fill3) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: var(--radius-small);
+  border-radius: 6px;
 }
 
-/* Toast */
-.toast-container {
-  position: fixed;
-  top: 56px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  pointer-events: none;
+/* === Toast === */
+.toast-wrap {
+  position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
+  z-index: 100; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
-
-.toast {
-  padding: 10px 20px;
-  border-radius: var(--radius-capsule);
-  background: var(--bg-elevated);
-  box-shadow: var(--shadow-elevated);
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-primary);
-  animation: appleScaleIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+.toast-item {
   pointer-events: auto;
+  padding: 8px 18px; border-radius: 18px;
+  background: var(--bg-card); color: var(--text);
+  font-size: 15px; font-weight: 500;
+  box-shadow: 0 4px 24px rgba(0,0,0,.12);
+  animation: scaleIn .2s ease;
+}
+.toast-item.out { animation: fadeUp .2s ease reverse both; }
+
+/* Section label */
+.a-label {
+  font-size: 13px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: .015em;
+  padding: 8px 16px 6px;
 }
 
-.toast-exit {
-  animation: appleFadeIn 0.2s ease-in reverse both;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 2px; }
 
-/* Scrollbar - minimal Apple style */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--text-tertiary); border-radius: 2px; }
-
-/* Mobile touch targets */
 @media (max-width: 640px) {
-  button, select, input[type="checkbox"] {
-    min-height: 44px;
-  }
-}
-
-/* Section header (Apple grouped style) */
-.section-header {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  padding: 0 4px 6px;
-  letter-spacing: 0.02em;
-}
-
-/* Glass */
-.glass {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-}
-
-.dark .glass {
-  background: rgba(28, 28, 30, 0.72);
+  button, select { min-height: 44px; }
 }
