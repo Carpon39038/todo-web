@@ -1,179 +1,41 @@
 @import "tailwindcss";
 
-/* ========================================
-   Apple Reminders (iOS 18) Recreation
-   ======================================== */
-
 @theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
   --color-apple-blue: #007AFF;
-  --color-apple-green: #34C759;
+  --color-apple-bg: #F2F2F7;
+  --color-apple-card: #FFFFFF;
+  --color-apple-text: #1d1d1f;
+  --color-apple-text-sec: #6b7280;
+  --color-apple-sep: rgba(0, 0, 0, 0.1);
   --color-apple-red: #FF3B30;
   --color-apple-orange: #FF9500;
-  --color-apple-yellow: #FFCC00;
-  --color-apple-purple: #AF52DE;
-  --color-apple-pink: #FF2D55;
-  --color-apple-teal: #5AC8FA;
+  --color-apple-green: #34C759;
 }
-
-:root {
-  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
-
-  --bg: #F2F2F7;
-  --bg-card: #FFFFFF;
-  --bg-input: rgba(118, 118, 128, 0.12);
-
-  --text: #000000D9;
-  --text2: #00000099;
-  --text3: #0000004D;
-
-  --fill1: rgba(120, 120, 128, 0.2);
-  --fill2: rgba(120, 120, 128, 0.16);
-  --fill3: rgba(118, 118, 128, 0.12);
-
-  --sep: rgba(60, 60, 67, 0.12);
-}
-
-.dark {
-  --bg: #000000;
-  --bg-card: #1C1C1E;
-  --bg-input: rgba(120, 120, 128, 0.24);
-
-  --text: #FFFFFFE6;
-  --text2: #FFFFFF99;
-  --text3: #FFFFFF4D;
-
-  --fill1: rgba(120, 120, 128, 0.36);
-  --fill2: rgba(120, 120, 128, 0.32);
-  --fill3: rgba(118, 118, 128, 0.24);
-
-  --sep: rgba(84, 84, 88, 0.65);
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font);
-  font-size: 17px;
-  line-height: 1.29;
-  letter-spacing: -0.022em;
+  background: var(--color-apple-bg);
+  color: var(--color-apple-text);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* === Input === */
-.a-input {
-  width: 100%;
-  padding: 11px 16px;
-  border-radius: 10px;
-  background: var(--bg-input);
-  border: none;
-  font-family: var(--font);
-  font-size: 17px;
-  color: var(--text);
-  outline: none;
-}
-.a-input::placeholder { color: var(--text3); }
-.a-input:focus { box-shadow: 0 0 0 3.5px rgba(0, 122, 255, 0.25); }
-
-/* === Button === */
-.a-btn-blue {
-  display: inline-flex; align-items: center; justify-content: center;
-  height: 36px; padding: 0 18px;
-  border-radius: 18px;
-  background: var(--color-apple-blue);
-  color: #fff; font-size: 15px; font-weight: 600;
-  border: none; cursor: pointer;
-  transition: opacity .15s;
-}
-.a-btn-blue:hover { opacity: .85; }
-.a-btn-blue:active { opacity: .7; }
-
-.a-btn-gray {
-  display: inline-flex; align-items: center; justify-content: center;
-  height: 36px; padding: 0 18px;
-  border-radius: 18px;
-  background: var(--fill2);
-  color: var(--color-apple-blue); font-size: 15px; font-weight: 600;
-  border: none; cursor: pointer;
-  transition: opacity .15s;
-}
-.a-btn-gray:hover { opacity: .85; }
-
-/* === Segmented Control === */
-.a-seg {
-  display: inline-flex;
-  border-radius: 9px;
-  padding: 2px;
-  background: var(--fill1);
-}
-.a-seg button {
-  padding: 6px 14px;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text2);
-  background: transparent;
-  border: none; cursor: pointer;
-  transition: all .2s;
-  font-family: var(--font);
-}
-.a-seg button.active {
-  background: var(--bg-card);
-  color: var(--text);
-  box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+.dark {
+  --color-apple-bg: #000000;
+  --color-apple-card: #1C1C1E;
+  --color-apple-text: #F5F5F7;
+  --color-apple-text-sec: #98989D;
+  --color-apple-sep: rgba(255, 255, 255, 0.1);
 }
 
-/* === List (Apple grouped) === */
-.a-list {
-  background: var(--bg-card);
-  border-radius: 12px;
-  overflow: hidden;
-}
-.a-list-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 16px;
-  position: relative;
-  transition: background .1s;
-}
-.a-list-item:hover { background: var(--fill3); }
-.a-list-item + .a-list-item::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 52px; right: 0;
-  height: .33px;
-  background: var(--sep);
-}
-
-/* === Checkbox (Apple circle) === */
-.a-check {
-  width: 22px; height: 22px; min-width: 22px;
-  border-radius: 50%;
-  border: 2px solid var(--sep);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; padding: 0;
-  background: transparent;
-  transition: all .15s;
-  margin-top: 1px;
-}
-.a-check.done {
-  border-color: var(--color-apple-blue);
-  background: var(--color-apple-blue);
-}
-.a-check.done svg { display: block; }
-.a-check svg { display: none; }
-
-/* === Animations === */
+/* Animations */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@keyframes pop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+@keyframes slideRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(.96); }
@@ -184,42 +46,36 @@ body {
   100% { background-position: 200% 0; }
 }
 .anim-fade { animation: fadeUp .3s ease both; }
-.anim-pop { animation: pop .3s ease; }
+.anim-slide { animation: slideRight .35s cubic-bezier(.2,.8,.2,1) both; }
+.anim-scale { animation: scaleIn .25s ease both; }
 
 .skeleton {
-  background: linear-gradient(90deg, var(--fill3) 25%, var(--fill2) 50%, var(--fill3) 75%);
+  background: linear-gradient(90deg, rgba(0,0,0,.04) 25%, rgba(0,0,0,.02) 50%, rgba(0,0,0,.04) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 6px;
 }
+.dark .skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,.06) 25%, rgba(255,255,255,.03) 50%, rgba(255,255,255,.06) 75%);
+  background-size: 200% 100%;
+}
 
-/* === Toast === */
+/* Toast */
 .toast-wrap {
   position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
-  z-index: 100; pointer-events: none;
+  z-index: 200; pointer-events: none;
   display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
 .toast-item {
-  pointer-events: auto;
-  padding: 8px 18px; border-radius: 18px;
-  background: var(--bg-card); color: var(--text);
+  pointer-events: auto; padding: 8px 18px; border-radius: 18px;
+  background: var(--color-apple-card); color: var(--color-apple-text);
   font-size: 15px; font-weight: 500;
   box-shadow: 0 4px 24px rgba(0,0,0,.12);
   animation: scaleIn .2s ease;
 }
-.toast-item.out { animation: fadeUp .2s ease reverse both; }
-
-/* Section label */
-.a-label {
-  font-size: 13px; font-weight: 600; color: var(--text2);
-  text-transform: uppercase; letter-spacing: .015em;
-  padding: 8px 16px 6px;
-}
+.toast-item.out { animation: fadeUp .15s ease reverse both; }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 2px; }
-
-@media (max-width: 640px) {
-  button, select { min-height: 44px; }
-}
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius: 2px; }
+.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); }

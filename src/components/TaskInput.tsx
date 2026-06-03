@@ -35,57 +35,63 @@ export default function TaskInput({ onAdd, categories }: Props) {
         <input type="text" value={content}
           onChange={e => setContent(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleAdd()}
-          placeholder="New Reminder..." className="a-input flex-1" />
+          placeholder="New Reminder..."
+          className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-white/10 text-sm font-medium border-none outline-none focus:ring-2 focus:ring-apple-blue/30 transition-shadow" />
         <button onClick={() => setOpen(!open)}
-          className="w-9 h-9 rounded-full flex items-center justify-center text-[15px] transition-transform active:scale-90"
-          style={{ background: open ? 'var(--color-apple-blue)' : 'var(--fill3)', color: open ? '#fff' : 'var(--text2)' }}>⋯</button>
-        <button onClick={handleAdd} className="a-btn-blue">Add</button>
+          className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm transition-colors ${
+            open ? 'bg-apple-blue text-white' : 'bg-gray-100 dark:bg-white/10 text-gray-500'
+          }`}>
+          ⋯
+        </button>
+        <button onClick={handleAdd}
+          className="px-5 py-2 rounded-xl bg-apple-blue text-white text-sm font-semibold hover:opacity-85 active:opacity-70 transition-opacity">
+          Add
+        </button>
       </div>
 
       {open && (
-        <div className="mt-3 p-4 rounded-xl space-y-3 anim-fade" style={{ background: 'var(--bg-card)' }}>
+        <div className="mt-3 p-4 rounded-xl bg-apple-card dark:bg-apple-card shadow-sm space-y-3 anim-fade">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <div className="a-label !p-0 mb-1.5">Priority</div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Priority</p>
               <div className="flex gap-1.5">
                 {(['low', 'medium', 'high'] as const).map(p => (
                   <button key={p} onClick={() => setPriority(p)}
-                    className="flex-1 py-1.5 rounded-lg text-[13px] font-semibold transition-all"
-                    style={{
-                      background: priority === p ? 'var(--color-apple-blue)' : 'var(--fill3)',
-                      color: priority === p ? '#fff' : 'var(--text2)',
-                    }}>
-                    {{ low: '🟢', medium: '🟡', high: '🔴' }[p]} {p}
+                    className={`flex-1 py-1.5 rounded-lg text-[13px] font-semibold transition-all ${
+                      priority === p ? 'bg-apple-blue text-white' : 'bg-gray-100 dark:bg-white/10 text-gray-500'
+                    }`}>
+                    {p}
                   </button>
                 ))}
               </div>
             </div>
             <div>
-              <div className="a-label !p-0 mb-1.5">Due Date</div>
-              <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="a-input !py-2 !text-[15px]" />
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Due Date</p>
+              <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)}
+                className="w-full px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-white/5 text-sm border-none outline-none" />
             </div>
             <div>
-              <div className="a-label !p-0 mb-1.5">Category</div>
-              <select value={category} onChange={e => setCategory(e.target.value)} className="a-input !py-2 !text-[15px]">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Category</p>
+              <select value={category} onChange={e => setCategory(e.target.value)}
+                className="w-full px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-white/5 text-sm border-none outline-none">
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <div className="a-label !p-0 mb-1.5">Tags</div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Tags</p>
             <div className="flex gap-2">
               <input type="text" value={tagInput} onChange={e => setTagInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
-                placeholder="Add tag..." className="a-input !py-2 !text-[15px] flex-1" />
-              <button onClick={addTag} className="a-btn-gray !px-3 !h-[36px] text-[15px]">+</button>
+                placeholder="Add tag..." className="flex-1 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-white/5 text-sm border-none outline-none" />
+              <button onClick={addTag} className="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-white/10 text-sm text-apple-blue font-medium">+</button>
             </div>
             {tags.length > 0 && (
               <div className="flex gap-1.5 mt-2 flex-wrap">
                 {tags.map(t => (
-                  <span key={t} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[13px] font-medium"
-                    style={{ background: 'rgba(0,122,255,0.1)', color: 'var(--color-apple-blue)' }}>
+                  <span key={t} className="px-2 py-0.5 rounded-md text-xs text-apple-blue bg-blue-50 dark:bg-blue-500/10">
                     #{t}
-                    <button onClick={() => setTags(tags.filter(x => x !== t))} className="opacity-50 hover:opacity-100">×</button>
+                    <button onClick={() => setTags(tags.filter(x => x !== t))} className="ml-1 opacity-50 hover:opacity-100">×</button>
                   </span>
                 ))}
               </div>

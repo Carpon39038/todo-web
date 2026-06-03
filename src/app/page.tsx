@@ -34,40 +34,46 @@ export default function Home() {
     categoryFilter ? 'all' : statusFilter, categoryFilter || undefined
   );
 
-  const filtered = useMemo(() => {
+  const filteredTasks = useMemo(() => {
     let r = tasks;
     if (categoryFilter && statusFilter !== 'all') r = r.filter(t => t.status === statusFilter);
     if (priorityFilter !== 'all') r = r.filter(t => t.priority === priorityFilter);
-    if (search) { const q = search.toLowerCase(); r = r.filter(t => t.content.toLowerCase().includes(q) || t.tags.some(tag => tag.includes(q))); }
+    if (search) {
+      const q = search.toLowerCase();
+      r = r.filter(t => t.content.toLowerCase().includes(q) || t.tags.some(tag => tag.toLowerCase().includes(q)));
+    }
     return r;
   }, [tasks, categoryFilter, statusFilter, priorityFilter, search]);
 
-  const toggleTask = (id: string, status: string) => updateTask(id, { status: status === 'todo' ? 'done' : 'todo' });
-  const handleAdd = (f: Partial<Task>) => { addTask(f); addToast('Reminder added'); };
-  const handleDelete = (id: string) => { deleteTask(id); addToast('Deleted', 'info'); };
-  const handleSelect = (id: string) => setSelectedIds(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleTask = (id: string, s: string) => updateTask(id, { status: s === 'todo' ? 'done' : 'todo' });
+  const handleAdd = (f: Partial<Task>) => { addTask(f); addToast('Task added'); };
+  const handleDelete = (id: string) => { deleteTask(id); addToast('Task deleted', 'info'); };
+  const handleSelect = (id: string) => {
+    setSelectedIds(p => { const n = new Set(p); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  };
   const handleDeleteSelected = () => { selectedIds.forEach(id => deleteTask(id)); addToast(`${selectedIds.size} deleted`, 'info'); setSelectedIds(new Set()); setBatchMode(false); };
-  const handleMarkSelected = (s: 'todo' | 'done') => { selectedIds.forEach(id => updateTask(id, { status: s })); addToast(`Updated`); setSelectedIds(new Set()); };
+  const handleMarkSelected = (s: 'todo' | 'done') => { selectedIds.forEach(id => updateTask(id, { status: s })); addToast(`${selectedIds.size} updated`); setSelectedIds(new Set()); };
 
-  const cats = ['general', 'work', 'personal', 'shopping', 'health'];
+  const allCategories = ['general', 'work', 'personal', 'shopping', 'health'];
 
   return (
-    <main className="min-h-screen" style={{ background: 'var(--bg)' }}>
+    <main className="min-h-screen selection:bg-apple-blue/30 selection:text-apple-blue" style={{ background: 'var(--color-apple-bg)' }}>
       {showPrompt && <ApiKeyPrompt onSave={saveApiKey} />}
 
-      <div className="max-w-[680px] mx-auto px-5 py-12">
+      <div className="max-w-2xl mx-auto px-4 md:px-8 py-8 md:py-12">
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-[34px] font-bold tracking-tight" style={{ color: 'var(--text)' }}>Reminders</h1>
-            <p className="text-[15px] mt-0.5" style={{ color: 'var(--text2)' }}>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Reminders</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
           </div>
           <div className="flex gap-2">
             <button onClick={() => setBatchMode(b => !b)}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-[15px] active:scale-90 transition-transform"
-              style={{ background: batchMode ? 'var(--color-apple-blue)' : 'var(--fill3)', color: batchMode ? '#fff' : 'var(--text2)' }}>
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-colors ${
+                batchMode ? 'bg-apple-blue text-white' : 'bg-gray-100 dark:bg-white/10 text-gray-500'
+              }`}>
               ☑
             </button>
             <DarkModeToggle dark={dark} toggle={toggleDark} />
@@ -76,22 +82,29 @@ export default function Home() {
 
         <StatsBar tasks={tasks} />
         <SearchBar value={query} onChange={setQuery} />
-        <TaskInput onAdd={handleAdd} categories={cats} />
-        <FilterBar status={statusFilter} onStatusChange={setStatusFilter} category={categoryFilter} onCategoryChange={setCategoryFilter} priorityFilter={priorityFilter} onPriorityChange={setPriorityFilter} categories={cats} />
+        <TaskInput onAdd={handleAdd} categories={allCategories} />
+        <FilterBar status={statusFilter} onStatusChange={setStatusFilter} category={categoryFilter}
+          onCategoryChange={setCategoryFilter} priorityFilter={priorityFilter} onPriorityChange={setPriorityFilter} categories={allCategories} />
 
-        {batchMode && <BatchActions selectedIds={selectedIds} tasks={filtered} onClearSelection={() => setSelectedIds(new Set())} onDeleteSelected={handleDeleteSelected} onMarkSelected={handleMarkSelected} />}
+        {batchMode && (
+          <BatchActions selectedIds={selectedIds} tasks={filteredTasks}
+            onClearSelection={() => setSelectedIds(new Set())}
+            onDeleteSelected={handleDeleteSelected} onMarkSelected={handleMarkSelected} />
+        )}
 
         {loading ? (
           <SkeletonList />
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-24">
-            <p className="text-[17px] font-medium" style={{ color: 'var(--text3)' }}>
-              {search ? 'No results found' : 'No reminders'}
-            </p>
+        ) : filteredTasks.length === 0 ? (
+          <div className="text-center mt-20">
+            <p className="text-lg text-gray-400 dark:text-gray-500">No Reminders</p>
+            <p className="text-sm text-apple-blue font-medium mt-1">Add one now</p>
           </div>
         ) : (
-          <div className="a-list">
-            <TaskList tasks={filtered} onToggle={toggleTask} onDelete={handleDelete} onUpdate={updateTask} onReorder={reorderTasks} selectedIds={selectedIds} onSelect={batchMode ? handleSelect : undefined} onOpenDetail={setDetailTask} />
+          <div className="bg-apple-card dark:bg-apple-card rounded-xl overflow-hidden shadow-sm">
+            <TaskList tasks={filteredTasks} onToggle={toggleTask} onDelete={handleDelete}
+              onUpdate={updateTask} onReorder={reorderTasks}
+              selectedIds={selectedIds} onSelect={batchMode ? handleSelect : undefined}
+              onOpenDetail={setDetailTask} />
           </div>
         )}
       </div>
