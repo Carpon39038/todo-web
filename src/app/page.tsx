@@ -3,16 +3,18 @@
 import { useState, useMemo } from 'react';
 import { Task, DEFAULT_CATEGORIES } from '@/lib/types';
 import { useTasks } from '@/hooks/useTasks';
+import { ListTodo, Calendar, Plus } from 'lucide-react';
 import TaskList from '@/components/TaskList';
 import TaskDetailPanel from '@/components/TaskDetailPanel';
 import CalendarView from '@/components/CalendarView';
 import ApiKeyPrompt from '@/components/ApiKeyPrompt';
 import ToastContainer, { useToastManager } from '@/components/Toast';
 import { useApiKeyGuard } from '@/lib/apiKey';
+import { motion, AnimatePresence } from 'motion/react';
 
 type Tab = 'list' | 'calendar';
 
-function SidebarButton({ active, color, label, icon, onClick }: { active: boolean; color: string; label: string; icon: string; onClick: () => void }) {
+function SidebarButton({ active, color, label, onClick, children }: { active: boolean; color: string; label: string; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       onClick={onClick}
@@ -20,8 +22,8 @@ function SidebarButton({ active, color, label, icon, onClick }: { active: boolea
         active ? 'bg-white shadow-sm font-medium text-[var(--color-apple-text)] dark:bg-white/10' : 'text-[var(--color-apple-text-secondary)] hover:bg-gray-200/50 dark:hover:bg-white/5 font-medium'
       }`}
     >
-      <div className="p-1.5 rounded-md text-white mr-1 text-[13px] leading-none" style={{ background: active ? color : '#9CA3AF' }}>
-        {icon}
+      <div className="p-1.5 rounded-md text-white mr-1" style={{ background: active ? color : '#9CA3AF' }}>
+        {children}
       </div>
       {label}
     </button>
@@ -92,36 +94,41 @@ export default function Home() {
     <main className="flex h-screen w-full bg-apple-bg overflow-hidden text-apple-text font-sans selection:bg-apple-blue/30 selection:text-apple-blue">
       {showPrompt && <ApiKeyPrompt onSave={saveApiKey} />}
 
+      {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-60 border-r border-[var(--color-apple-separator)]/50 bg-[#F6F6F6]/80 dark:bg-[#111]/80 backdrop-blur-md">
         <div className="p-6 space-y-8">
           <h2 className="text-xl font-semibold text-apple-text px-2 mb-6 tracking-tight">iOS Tasks</h2>
           <nav className="space-y-1">
-            <SidebarButton active={activeTab === 'list'} color="var(--color-apple-blue)" label="All Tasks" icon="☰" onClick={() => setActiveTab('list')} />
-            <SidebarButton active={activeTab === 'calendar'} color="var(--color-apple-red)" label="Calendar" icon="📅" onClick={() => setActiveTab('calendar')} />
+            <SidebarButton active={activeTab === 'list'} color="var(--color-apple-blue)" label="All Tasks" onClick={() => setActiveTab('list')}>
+              <ListTodo className="w-4 h-4" />
+            </SidebarButton>
+            <SidebarButton active={activeTab === 'calendar'} color="var(--color-apple-red)" label="Calendar" onClick={() => setActiveTab('calendar')}>
+              <Calendar className="w-4 h-4" />
+            </SidebarButton>
           </nav>
         </div>
       </aside>
 
+      {/* Main Content */}
       <section className="flex-1 flex relative bg-apple-card shadow-inner">
         <div className="flex-1 flex flex-col h-full bg-apple-card shadow-inner rounded-l-lg border-l border-[var(--color-apple-separator)]">
+          {/* Mobile Header */}
           <div className="md:hidden flex items-center justify-between p-4 bg-apple-bg/80 backdrop-blur-md sticky top-0 z-10 border-b border-[var(--color-apple-separator)]/30">
-            <button className="text-apple-blue font-medium">☰</button>
+            <span className="text-apple-blue"><ListTodo className="w-6 h-6" /></span>
             <div className="font-semibold">{activeTab === 'list' ? 'Tasks' : 'Calendar'}</div>
-            <button className="text-apple-blue" onClick={handleAddClick}>＋</button>
+            <button className="text-apple-blue" onClick={handleAddClick}><Plus className="w-6 h-6" /></button>
           </div>
 
           {activeTab === 'list' ? (
             <div className="flex-1 flex flex-col h-full bg-apple-card">
               <header className="h-16 px-4 md:px-8 flex items-center justify-between border-b border-gray-100 dark:border-white/[.06] shrink-0">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">Tasks</h1>
-                <div className="flex space-x-4">
-                  <button
-                    onClick={handleAddClick}
-                    className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-apple-blue font-medium active:bg-gray-200 dark:active:bg-white/15 transition-colors"
-                  >
-                    <span className="text-lg leading-none">＋</span>
-                  </button>
-                </div>
+                <button
+                  onClick={handleAddClick}
+                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center text-apple-blue active:bg-gray-200 dark:active:bg-white/15 transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
               </header>
 
               <div className="flex-1 px-4 md:px-8 py-4 overflow-y-auto pb-24">
@@ -187,25 +194,35 @@ export default function Home() {
           )}
         </div>
 
-        {detailTask && (
-          <div className="absolute inset-0 z-50 bg-apple-card md:relative md:w-80 lg:w-96 md:border-l border-[var(--color-apple-separator)]/50 anim-slide">
-            <TaskDetailPanel
-              task={detailTask}
-              onClose={() => setDetailTask(null)}
-              onUpdate={handleSaveDetail}
-              onDelete={handleDelete}
-            />
-          </div>
-        )}
+        {/* Detail Panel with slide animation */}
+        <AnimatePresence>
+          {detailTask && (
+            <motion.div
+              initial={{ x: '100%', opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="absolute inset-0 z-50 bg-apple-card md:relative md:w-80 lg:w-96 md:border-l border-[var(--color-apple-separator)]/50"
+            >
+              <TaskDetailPanel
+                task={detailTask}
+                onClose={() => setDetailTask(null)}
+                onUpdate={handleSaveDetail}
+                onDelete={handleDelete}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
 
+      {/* Mobile Bottom Nav */}
       <div className="md:hidden fixed bottom-0 inset-x-0 bg-apple-bg/80 backdrop-blur-xl border-t border-[var(--color-apple-separator)]/30 px-6 py-2 flex justify-around items-center z-40 pb-safe">
         <button onClick={() => setActiveTab('list')} className={`flex flex-col items-center gap-1 ${activeTab === 'list' ? 'text-apple-blue' : 'text-[var(--color-apple-text-secondary)]'}`}>
-          <span className="text-lg">☰</span>
+          <ListTodo className="w-6 h-6" />
           <span className="text-[10px] font-medium">Tasks</span>
         </button>
         <button onClick={() => setActiveTab('calendar')} className={`flex flex-col items-center gap-1 ${activeTab === 'calendar' ? 'text-apple-blue' : 'text-[var(--color-apple-text-secondary)]'}`}>
-          <span className="text-lg">📅</span>
+          <Calendar className="w-6 h-6" />
           <span className="text-[10px] font-medium">Calendar</span>
         </button>
       </div>
