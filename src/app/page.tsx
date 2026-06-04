@@ -5,6 +5,7 @@ import { Task, DEFAULT_CATEGORIES } from '@/lib/types';
 import { useTasks } from '@/hooks/useTasks';
 import TaskList from '@/components/TaskList';
 import TaskDetailPanel from '@/components/TaskDetailPanel';
+import CalendarView from '@/components/CalendarView';
 import ApiKeyPrompt from '@/components/ApiKeyPrompt';
 import ToastContainer, { useToastManager } from '@/components/Toast';
 import { useApiKeyGuard } from '@/lib/apiKey';
@@ -178,7 +179,11 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-[var(--color-apple-text-secondary)] text-sm">Calendar view coming later</div>
+            <CalendarView
+              tasks={tasks}
+              onToggle={toggleTask}
+              onOpenDetail={setDetailTask}
+            />
           )}
         </div>
 
