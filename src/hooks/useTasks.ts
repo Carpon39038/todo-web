@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Task, TaskStatus } from '@/lib/types';
 import { supabase } from '@/lib/supabase-client';
 import { getApiKey } from '@/lib/apiKey';
@@ -16,6 +16,23 @@ export function useTasks(status: TaskStatus | 'all', category?: string) {
     return h;
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    const params = new URLSearchParams({ status: category ? 'all' : status });
+    if (category) params.set('category', category);
+    fetch(`/api/tasks?${params}`, { headers: getHeaders() })
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        if (cancelled) return;
+        let filtered = data;
+        if (category && status !== 'all') filtered = data.filter((t: Task) => t.status === status);
+        setTasks(filtered);
+        setLoading(false);
+      })
+      .catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [status, category, getHeaders]);
+
   const fetchTasks = useCallback(async () => {
     const params = new URLSearchParams({ status: category ? 'all' : status });
     if (category) params.set('category', category);
@@ -28,8 +45,6 @@ export function useTasks(status: TaskStatus | 'all', category?: string) {
     }
     setLoading(false);
   }, [status, category, getHeaders]);
-
-  useEffect(() => { fetchTasks(); }, [fetchTasks]);
 
   // Realtime
   useEffect(() => {

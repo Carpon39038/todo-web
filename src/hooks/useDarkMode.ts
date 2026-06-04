@@ -1,16 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export function useDarkMode() {
-  const [dark, setDark] = useState(false);
+function getInitialDark(): boolean {
+  if (typeof window === 'undefined') return false;
+  const stored = localStorage.getItem('dark-mode');
+  if (stored !== null) return stored === 'true';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
 
-  useEffect(() => {
-    const stored = localStorage.getItem('dark-mode');
-    if (stored !== null) {
-      setDark(stored === 'true');
-    } else {
-      setDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
-    }
-  }, []);
+export function useDarkMode() {
+  const [dark, setDark] = useState(getInitialDark);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);

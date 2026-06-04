@@ -29,11 +29,11 @@ function SortableTaskItem(props: {
   onSelect?: (id: string) => void;
   onOpenDetail: (task: Task) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.task.id });
+  const { setNodeRef, transform, transition } = useSortable({ id: props.task.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
     <div ref={setNodeRef} style={style}>
-      <TaskItem {...props} dragHandleProps={{ ...attributes, ...listeners }} />
+      <TaskItem {...props} />
     </div>
   );
 }
@@ -64,14 +64,12 @@ export default function TaskList({ tasks, onToggle, onDelete, onUpdate, onReorde
     }
   };
 
-  if (tasks.length === 0) {
-    return <div className="text-center text-gray-400 py-12">No tasks yet</div>;
-  }
+  if (tasks.length === 0) return null;
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-        <div className="space-y-2">
+        <div className="space-y-1">
           {tasks.map(task => (
             <SortableTaskItem
               key={task.id}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Task, TaskStatus, Priority } from '@/lib/types';
+import { TaskStatus, Priority } from '@/lib/types';
 
 interface Props {
   status: TaskStatus | 'all';

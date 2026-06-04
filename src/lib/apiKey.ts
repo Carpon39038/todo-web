@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const API_KEY_STORAGE = 'todo-api-key';
 
@@ -14,17 +14,14 @@ export function setApiKey(key: string) {
 }
 
 export function useApiKeyGuard() {
-  const [apiKey, setLocalApiKey] = useState('');
-  const [showPrompt, setShowPrompt] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(API_KEY_STORAGE);
-    if (!stored) {
-      setShowPrompt(true);
-    } else {
-      setLocalApiKey(stored);
-    }
-  }, []);
+  const [apiKey, setLocalApiKey] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem(API_KEY_STORAGE) || '';
+  });
+  const [showPrompt, setShowPrompt] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !localStorage.getItem(API_KEY_STORAGE);
+  });
 
   const save = (key: string) => {
     if (!key.trim()) return;

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Task, Priority } from '@/lib/types';
+import { useState } from 'react';
+import { Task } from '@/lib/types';
 
 interface Props {
   task: Task | null;
@@ -10,141 +10,88 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
-const priorities: { value: Priority; label: string; icon: string }[] = [
-  { value: 'low', label: 'Low', icon: '🟢' },
-  { value: 'medium', label: 'Medium', icon: '🟡' },
-  { value: 'high', label: 'High', icon: '🔴' },
-];
-
 export default function TaskDetailPanel({ task, onClose, onUpdate, onDelete }: Props) {
-  const [content, setContent] = useState('');
-  const [priority, setPriority] = useState<Priority>('medium');
-  const [dueDate, setDueDate] = useState('');
-  const [category, setCategory] = useState('general');
-  const [tagInput, setTagInput] = useState('');
-
-  useEffect(() => {
-    if (task) {
-      setContent(task.content);
-      setPriority(task.priority);
-      setDueDate(task.due_date?.split('T')[0] || '');
-      setCategory(task.category);
-    }
-  }, [task]);
+  const [content, setContent] = useState(task?.content ?? '');
+  const [notes, setNotes] = useState(task?.tags?.join(' ') ?? '');
+  const [date, setDate] = useState(task?.due_date ?? '');
 
   if (!task) return null;
 
   const handleSave = () => {
-    onUpdate(task.id, { content, priority, due_date: dueDate || null, category });
+    if (!content.trim()) return onClose();
+    onUpdate(task.id, {
+      content: content.trim(),
+      due_date: date || null,
+      tags: notes.trim() ? notes.trim().split(/\s+/).map(t => t.replace(/^#/, '')) : [],
+    });
     onClose();
   };
 
-  const handleAddTag = () => {
-    const t = tagInput.trim();
-    if (t && !task.tags.includes(t)) {
-      onUpdate(task.id, { tags: [...task.tags, t] });
-    }
-    setTagInput('');
-  };
-
   return (
-    <>
-      <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md p-6 animate-slideDown" style={{ background: 'var(--bg-primary)' }}>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Task Details</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-500">✕</button>
+    <div className="flex flex-col h-full bg-apple-card absolute inset-0 z-50 md:relative overflow-hidden pt-4 md:pt-0">
+      <div className="md:hidden flex items-center justify-between px-4 py-2 bg-apple-card">
+        <button onClick={handleSave} className="text-gray-500 p-2">✕</button>
+      </div>
+
+      <div className="flex-1 p-6 md:p-8 flex flex-col h-full overflow-y-auto">
+        <div className="flex items-start mb-8">
+          <div className="w-[18px] h-[18px] border-[1.5px] border-[#c7c7cc] dark:border-[#48484A] rounded-full mr-4 mt-1.5 flex-shrink-0"></div>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="What needs to be done?"
+            rows={2}
+            className="flex-1 text-xl font-semibold text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none resize-none bg-transparent"
+            autoFocus
+          />
         </div>
 
-        <div className="space-y-5">
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Content</label>
-            <textarea
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border resize-none text-sm" rows={3}
-              style={{ background: 'var(--bg-input)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Priority</label>
-            <div className="flex gap-2">
-              {priorities.map(p => (
-                <button
-                  key={p.value}
-                  onClick={() => setPriority(p.value)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all ${priority === p.value ? 'border-current shadow-sm' : ''}`}
-                  style={{
-                    background: priority === p.value ? 'var(--bg-input)' : 'transparent',
-                    borderColor: priority === p.value ? 'var(--border)' : 'var(--border-light)',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  {p.icon} {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Due Date</label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={e => setDueDate(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border text-sm"
-              style={{ background: 'var(--bg-input)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Category</label>
-            <input
-              type="text"
-              value={category}
-              onChange={e => setCategory(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border text-sm"
-              style={{ background: 'var(--bg-input)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Tags</label>
-            <div className="flex gap-2 mb-2 flex-wrap">
-              {task.tags.map(t => (
-                <span key={t} className="px-2.5 py-1 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-xs flex items-center gap-1.5">
-                  #{t}
-                  <button onClick={() => onUpdate(task.id, { tags: task.tags.filter(x => x !== t) })} className="hover:text-red-500">×</button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
+        <div className="space-y-6 flex-1">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500 flex items-center"><span className="mr-2">📅</span> Date</span>
               <input
-                type="text"
-                value={tagInput}
-                onChange={e => setTagInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
-                placeholder="Add tag..."
-                className="flex-1 px-3 py-2 rounded-lg border text-sm"
-                style={{ background: 'var(--bg-input)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="font-medium text-apple-blue bg-transparent focus:outline-none text-right"
               />
-              <button onClick={handleAddTag} className="px-3 py-2 rounded-lg text-sm font-medium transition-colors" style={{ background: 'var(--bg-input)', color: 'var(--text-primary)' }}>+</button>
             </div>
           </div>
 
-          <div className="pt-3 border-t flex gap-3" style={{ borderColor: 'var(--border)' }}>
-            <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white text-sm font-medium transition-colors">Save</button>
-            <button onClick={() => { onDelete(task.id); onClose(); }} className="px-4 py-2.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">Delete</button>
+          <div className="space-y-2 pt-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Notes</p>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add notes..."
+              className="w-full h-32 p-3 bg-gray-50 dark:bg-white/[.04] rounded-xl text-sm border-none focus:outline-none resize-none text-gray-700 dark:text-gray-300"
+            />
           </div>
+        </div>
 
-          <div className="pt-3 text-xs space-y-1" style={{ color: 'var(--text-muted)' }}>
-            <p>Created: {new Date(task.created_at).toLocaleString()}</p>
-            <p>Updated: {new Date(task.updated_at).toLocaleString()}</p>
-            <p>Source: {task.source}</p>
-          </div>
+        <div className="pt-6 mt-auto border-t border-gray-100 dark:border-white/[.06] flex justify-between items-center shrink-0">
+          <button className="text-xs text-gray-400">Last updated recently</button>
+          {!task.id.startsWith('new-') ? (
+            <button
+              onClick={() => {
+                onDelete(task.id);
+                onClose();
+              }}
+              className="text-red-500 text-sm font-medium p-2 -mr-2"
+            >
+              Delete
+            </button>
+          ) : (
+            <button
+              onClick={handleSave}
+              className="text-apple-blue font-medium p-2 -mr-2 text-sm"
+            >
+              Done
+            </button>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
